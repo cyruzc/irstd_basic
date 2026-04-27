@@ -1,0 +1,152 @@
+{
+  "dataset": "IRSTD-1K",
+  "seed": 42,
+  "naming_convention": {
+    "LightUNet": [
+      8,
+      16,
+      32
+    ],
+    "MiniUNet": [
+      4,
+      8,
+      16
+    ],
+    "MicroUNet": [
+      2,
+      4,
+      8
+    ]
+  },
+  "experiments": [
+    {
+      "architecture": "LightUNet",
+      "variant": "head8",
+      "encoder_channels": [
+        8,
+        16,
+        32
+      ],
+      "head_channels": 8,
+      "source_run_dir": "log/IRSTD-1K/LightUNet/seed42",
+      "source_model_name": "LightUNet",
+      "params": 121033,
+      "flops": 592969728.0,
+      "best_iou": {
+        "checkpoint_epoch": 160,
+        "IoU": 0.6116572022438049,
+        "nIoU": 0.6278391263971281,
+        "PD": 0.9158249158249159,
+        "FA": 3.7786379834869877e-05
+      },
+      "best_niou": {
+        "checkpoint_epoch": 131,
+        "IoU": 0.6111149191856384,
+        "nIoU": 0.6278546959606569,
+        "PD": 0.8956228956228957,
+        "FA": 2.774670247163158e-05
+      },
+      "copied_checkpoints": {
+        "best_iou": "results/irstd1k_unet_family_seed42/LightUNet/source_best_iou.pth.tar",
+        "best_niou": "results/irstd1k_unet_family_seed42/LightUNet/source_best_niou.pth.tar"
+      }
+    },
+    {
+      "architecture": "MiniUNet",
+      "variant": "head4",
+      "encoder_channels": [
+        4,
+        8,
+        16
+      ],
+      "head_channels": 4,
+      "source_run_dir": "log/IRSTD-1K/MiniUNet/seed42",
+      "source_model_name": "MiniUNet",
+      "params": 30469,
+      "flops": 153354240.0,
+      "best_iou": {
+        "checkpoint_epoch": 218,
+        "IoU": 0.6107226014137268,
+        "nIoU": 0.6115771600263036,
+        "PD": 0.9259259259259259,
+        "FA": 3.1048977689351887e-05
+      },
+      "best_niou": {
+        "checkpoint_epoch": 238,
+        "IoU": 0.6069481372833252,
+        "nIoU": 0.616724072978716,
+        "PD": 0.9326599326599326,
+        "FA": 4.10127395298332e-05
+      },
+      "copied_checkpoints": {
+        "best_iou": "results/irstd1k_unet_family_seed42/MiniUNet/head4/source_best_iou.pth.tar",
+        "best_niou": "results/irstd1k_unet_family_seed42/MiniUNet/head4/source_best_niou.pth.tar"
+      }
+    },
+    {
+      "architecture": "MiniUNet",
+      "variant": "head2",
+      "encoder_channels": [
+        4,
+        8,
+        16
+      ],
+      "head_channels": 2,
+      "source_run_dir": "log/IRSTD-1K/MicroUNetHead2/seed42",
+      "source_model_name": "MicroUNetHead2",
+      "params": 30477,
+      "flops": 153747456.0,
+      "best_iou": {
+        "checkpoint_epoch": 145,
+        "IoU": 0.6080427169799805,
+        "nIoU": 0.6097787585461614,
+        "PD": 0.898989898989899,
+        "FA": 3.313662455184385e-05
+      },
+      "best_niou": {
+        "checkpoint_epoch": 254,
+        "IoU": 0.5953180193901062,
+        "nIoU": 0.6172090855390019,
+        "PD": 0.936026936026936,
+        "FA": 4.8281541239703074e-05
+      },
+      "copied_checkpoints": {
+        "best_iou": "results/irstd1k_unet_family_seed42/MiniUNet/head2/source_best_iou.pth.tar",
+        "best_niou": "results/irstd1k_unet_family_seed42/MiniUNet/head2/source_best_niou.pth.tar"
+      }
+    },
+    {
+      "architecture": "MicroUNet",
+      "variant": "head2",
+      "encoder_channels": [
+        2,
+        4,
+        8
+      ],
+      "head_channels": 2,
+      "source_run_dir": "log/IRSTD-1K/ExtremeUNet/seed42",
+      "source_model_name": "MicroUNet",
+      "params": 7723,
+      "flops": 40894464.0,
+      "best_iou": {
+        "checkpoint_epoch": 11,
+        "IoU": 0.0034316303208470345,
+        "nIoU": 0.012086496769981424,
+        "PD": 0.3939393939393939,
+        "FA": 0.0027303362730890512
+      },
+      "best_niou": {
+        "checkpoint_epoch": 11,
+        "IoU": 0.0034316303208470345,
+        "nIoU": 0.012086496769981424,
+        "PD": 0.3939393939393939,
+        "FA": 0.0027303362730890512
+      },
+      "copied_checkpoints": {
+        "best_iou": "results/irstd1k_unet_family_seed42/MicroUNet/source_best_iou.pth.tar",
+        "best_niou": "results/irstd1k_unet_family_seed42/MicroUNet/source_best_niou.pth.tar"
+      },
+      "legacy_source_model_name": "ExtremeUNet"
+    }
+  ]
+}

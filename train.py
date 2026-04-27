@@ -1,7 +1,13 @@
 """Unified training script for IRSTD benchmark.
 
+Naming convention:
+    LightUNet    = [8, 16, 32]
+    MiniUNet     = [4, 8, 16], standard head4 variant
+    MiniUNetHead2= [4, 8, 16], compressed head2 variant
+    MicroUNet    = [2, 4, 8]
+
 Directory layout per experiment:
-    log/{dataset}/{model}/seed{N}/
+    log/{dataset}/{model}/[experiment_name/ ]seed{N}/
         config.json              # 完整超参数快照
         metrics.csv              # 每 epoch 指标
         best_iou.pth.tar         # 最佳 IoU checkpoint
@@ -11,7 +17,7 @@ Directory layout per experiment:
         checkpoints/             # 周期性 checkpoint (--save_interval > 0)
             checkpoint_ep{N}.pth.tar
         final_eval.json          # 两个 best checkpoint 的全指标评测
-    log/{dataset}/{model}/summary.txt   # 多 seed 聚合结果
+    log/{dataset}/{model}/[experiment_name/ ]summary.txt   # 多 seed 聚合结果
 
 Default settings (unified across all models):
     Loss:       BCELogits + SoftIoU (combined)
@@ -36,14 +42,19 @@ from torch.utils.data import DataLoader
 
 from dataset import TrainSetLoader, TestSetLoader
 from metrics import IoU, nIoU, PD_FA
-from net import Net
+from net import LOSS_NAMES, MODEL_NAMES, Net
 from utils import seed_pytorch, get_optimizer
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-parser = argparse.ArgumentParser(description="PyTorch IRSTD Train")
+parser = argparse.ArgumentParser(
+    description="PyTorch IRSTD Train (LightUNet / MiniUNet head4-head2 / MicroUNet)"
+)
 parser.add_argument("--model_names", default=["LightUNet"], nargs="+",
-                    help="model name: LightUNet, ACM")
+                    choices=MODEL_NAMES,
+                    help=("model name: "
+                          f"{', '.join(MODEL_NAMES)} "
+                          "(MiniUNet=head4, MiniUNetHead2=head2)"))
 parser.add_argument("--dataset_names", default=["IRSTD-1K"], nargs="+",
                     help="dataset name")
 parser.add_argument("--dataset_dir", default="./datasets", type=str)
@@ -56,11 +67,13 @@ parser.add_argument("--min_lr", type=float, default=1e-6)
 parser.add_argument("--warmup", type=int, default=5,
                     help="linear warmup epochs (0 = no warmup)")
 parser.add_argument("--loss", default="BCE+SoftIoU", type=str,
-                    choices=["BCE+SoftIoU", "Focal"],
+                    choices=LOSS_NAMES,
                     help="loss function")
 parser.add_argument("--grad_clip", type=float, default=1.0,
                     help="gradient clip max norm (0 = disabled)")
 parser.add_argument("--save", default="./log", type=str)
+parser.add_argument("--experiment_name", default="", type=str,
+                    help="optional experiment subdirectory under log/{dataset}/{model}")
 parser.add_argument("--threads", type=int, default=8)
 parser.add_argument("--threshold", type=float, default=0.5)
 parser.add_argument("--seeds", default=[42], nargs="+", type=int,
@@ -68,7 +81,9 @@ parser.add_argument("--seeds", default=[42], nargs="+", type=int,
 parser.add_argument("--save_interval", type=int, default=0,
                     help="save checkpoint every N epochs (0 = only best_iou + best_niou)")
 parser.add_argument("--resume", default=None, type=str,
-                    help="resume from a run directory (e.g. log/IRSTD-1K/LightUNet/seed42)")
+                    help=("resume from a run directory "
+                          "(e.g. log/IRSTD-1K/LightUNet/seed42 or "
+                          "log/IRSTD-1K/MiniUNetHead2/head2_probe/seed42)"))
 
 opt = parser.parse_args()
 
@@ -86,6 +101,7 @@ def save_config(run_dir, model_name, dataset_name, seed, params, flops):
         "model": model_name,
         "dataset": dataset_name,
         "seed": seed,
+        "experiment_name": opt.experiment_name,
         "epochs": opt.n_epochs,
         "batch_size": opt.batch_size,
         "patch_size": opt.patch_size,
@@ -114,6 +130,17 @@ def init_metrics_csv(run_dir):
         writer = csv.writer(f)
         writer.writerow(["epoch", "lr", "train_loss", "IoU", "nIoU"])
     return path
+
+
+def get_model_output_dir(dataset_name, model_name):
+    model_dir = os.path.join(opt.save, dataset_name, model_name)
+    if opt.experiment_name:
+        model_dir = os.path.join(model_dir, opt.experiment_name)
+    return model_dir
+
+
+def get_run_dir(dataset_name, model_name, seed):
+    return os.path.join(get_model_output_dir(dataset_name, model_name), f"seed{seed}")
 
 
 def append_metrics(csv_path, epoch, lr, loss, iou=None, niou=None):
@@ -201,11 +228,11 @@ def eval_full(net, test_loader, threshold):
 def run_single(model_name, dataset_name, seed):
     """Train one model on one dataset with one seed."""
     seed_pytorch(seed)
-    run_dir = os.path.join(opt.save, dataset_name, model_name, f"seed{seed}")
+    run_dir = get_run_dir(dataset_name, model_name, seed)
 
     # avoid overwriting existing results — append short timestamp
     if os.path.exists(os.path.join(run_dir, "config.json")):
-        run_dir = os.path.join(opt.save, dataset_name, model_name,
+        run_dir = os.path.join(get_model_output_dir(dataset_name, model_name),
                                f"seed{seed}_{int(time.time())}")
 
     os.makedirs(run_dir, exist_ok=True)
@@ -420,7 +447,7 @@ def run_single(model_name, dataset_name, seed):
 
 def summarize(model_name, dataset_name):
     """Aggregate results across seeds and write summary.txt."""
-    model_dir = os.path.join(opt.save, dataset_name, model_name)
+    model_dir = get_model_output_dir(dataset_name, model_name)
     seed_results = []
 
     for seed_dir in sorted(os.listdir(model_dir)):

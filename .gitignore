@@ -16,6 +16,7 @@ ENV/
 .hypothesis/
 .coverage
 .coverage.*
+tmp/*
 htmlcov/
 
 .ipynb_checkpoints/

@@ -6,6 +6,9 @@ Usage:
 
     # test all seeds for a model+dataset, print mean±std
     python test.py --model_name LightUNet --dataset_name IRSTD-1K
+
+    # test MiniUNet head2 variant
+    python test.py --model_name MiniUNetHead2 --dataset_name IRSTD-1K
 """
 
 import argparse
@@ -18,12 +21,14 @@ from torch.utils.data import DataLoader
 
 from dataset import TestSetLoader
 from metrics import IoU, nIoU, PD_FA
-from net import Net
+from net import MODEL_NAMES, Net
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-parser = argparse.ArgumentParser(description="PyTorch IRSTD Benchmark Test")
-parser.add_argument("--model_name", default="LightUNet", type=str)
+parser = argparse.ArgumentParser(
+    description="PyTorch IRSTD Benchmark Test (LightUNet / MiniUNet head4-head2 / MicroUNet)"
+)
+parser.add_argument("--model_name", default="LightUNet", type=str, choices=MODEL_NAMES)
 parser.add_argument("--dataset_name", default="IRSTD-1K", type=str)
 parser.add_argument("--dataset_dir", default="./datasets", type=str)
 parser.add_argument("--checkpoint", default=None, type=str,

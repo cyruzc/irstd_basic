@@ -4,9 +4,18 @@
 
 ## 支持模型
 
+命名约定：
+
+- `LightUNet` = `[8,16,32]`
+- `MiniUNet` = `[4,8,16]`，包含 `head4` 和 `head2` 两个变体
+- `MicroUNet` = `[2,4,8]`
+
 | 模型 | 参数量 | FLOPs (256×256) |
 |------|--------|-----------------|
 | LightUNet [8,16,32] | 121K | 593M |
+| MiniUNet head4 [4,8,16] | 30K | 153M |
+| MiniUNet head2 [4,8,16] | 30K | 154M |
+| MicroUNet [2,4,8] | 7.7K | 40.9M |
 | ACM | 398K | 352M |
 
 所有模型输出 **logits**（未经 sigmoid），sigmoid 仅在 loss 内部和 eval 时应用。
@@ -59,6 +68,15 @@ datasets/<dataset_name>/
 # 训练两个模型，单 seed
 python train.py --model_names LightUNet ACM --dataset_names IRSTD-1K
 
+# 训练三种 UNet 宽度变体
+python train.py --model_names LightUNet MiniUNet MicroUNet --dataset_names IRSTD-1K
+
+# 训练 MiniUNet 的 head2 变体
+python train.py --model_names MiniUNetHead2 --dataset_names IRSTD-1K
+
+# 给同一组实验自定义目录名
+python train.py --model_names MiniUNetHead2 --dataset_names IRSTD-1K --experiment_name head2_probe
+
 # 多 seed 训练（自动计算 mean±std）
 python train.py --model_names LightUNet ACM --seeds 42 123 456
 
@@ -84,7 +102,8 @@ python cal_params.py --model_name ACM
 ```
 python train.py --help
 
-  --model_names       模型名称 (LightUNet, ACM)
+  --model_names       模型名称 (LightUNet, MiniUNet, MiniUNetHead2, MicroUNet, ACM)
+                      其中 MiniUNet=MiniUNet head4, MiniUNetHead2=MiniUNet head2
   --dataset_names     数据集名称
   --dataset_dir       数据集根目录 (default: ./datasets)
   --batch_size        batch size (default: 16)
@@ -99,6 +118,7 @@ python train.py --help
   --seeds             随机种子列表 (default: 42)
   --threshold         二值化阈值 (default: 0.5)
   --save              日志保存目录 (default: ./log)
+  --experiment_name   可选实验子目录名，插入到 log/<dataset>/<model>/ 下
   --threads           DataLoader workers (default: 8)
   --save_interval     周期性保存间隔，0=不保存 (default: 0)
   --resume            断点续训目录路径
@@ -107,7 +127,7 @@ python train.py --help
 ## 输出结构
 
 ```
-log/<dataset>/<model>/seed<seed>/
+log/<dataset>/<model>/<experiment_name>/seed<seed>/
 ├── config.json              # 超参数快照
 ├── metrics.csv              # 每 epoch: loss, IoU, nIoU
 ├── best_iou.json            # 最佳 IoU epoch + 指标
@@ -119,10 +139,10 @@ log/<dataset>/<model>/seed<seed>/
     ├── checkpoint_ep50.pth.tar
     └── ...
 
-log/<dataset>/<model>/summary.txt    # 多 seed 聚合 (mean±std)
+log/<dataset>/<model>/<experiment_name>/summary.txt    # 多 seed 聚合 (mean±std)
 ```
 
-重复运行同一 seed 会自动附加时间戳（如 `seed42_1745487123`），不覆盖旧数据。
+如果未设置 `--experiment_name`，重复运行同一 seed 会自动附加时间戳（如 `seed42_1745487123`），不覆盖旧数据。
 
 ## 评测策略
 
@@ -137,3 +157,5 @@ log/<dataset>/<model>/summary.txt    # 多 seed 聚合 (mean±std)
 1. 在 `models/` 下创建模型文件，确保输入 `[B,1,H,W]`，输出 `[B,1,H,W]` **logits**（不含 sigmoid）
 2. 在 `models/__init__.py` 中导出
 3. 在 `net.py` 中注册模型名
+
+当前的 `UNet` 系列已经统一为一个通用骨干 `models/unet.py`，不同宽度通过注册表暴露为不同模型名。
