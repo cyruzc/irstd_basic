@@ -27,10 +27,7 @@ class TrainSetLoader(Dataset):
 
         split_path = os.path.join(self.dataset_dir, "img_idx", f"train_{dataset_name}.txt")
         if not os.path.exists(split_path):
-            alt = os.path.join(self.dataset_dir, "img_idx", "train.txt")
-            if os.path.exists(alt):
-                import shutil
-                shutil.copyfile(alt, split_path)
+            split_path = os.path.join(self.dataset_dir, "img_idx", "train.txt")
         with open(split_path, "r") as f:
             self.sample_list = f.read().splitlines()
 

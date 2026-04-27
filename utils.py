@@ -39,6 +39,8 @@ def get_img_norm_cfg(dataset_name, dataset_dir):
 
     # compute from data
     train_list_path = os.path.join(dataset_dir, dataset_name, "img_idx", f"train_{dataset_name}.txt")
+    if not os.path.exists(train_list_path):
+        train_list_path = os.path.join(dataset_dir, dataset_name, "img_idx", "train.txt")
     with open(train_list_path, "r") as f:
         train_list = f.read().splitlines()
     img_dir = os.path.join(dataset_dir, dataset_name, "images")
