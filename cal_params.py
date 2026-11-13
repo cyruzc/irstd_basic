@@ -6,7 +6,7 @@ import torch
 from net import MODEL_NAMES, Net
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_name", default="LightUNet", type=str, choices=MODEL_NAMES)
+parser.add_argument("--model_name", default="UNet", type=str, choices=MODEL_NAMES)
 parser.add_argument("--input_size", default=256, type=int)
 opt = parser.parse_args()
 
