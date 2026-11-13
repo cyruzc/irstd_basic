@@ -40,3 +40,6 @@ Thumbs.db
 .idea/
 datasets/*
 log/*
+
+# audit tooling runtime
+tools/audit/demos/PyIRSTDMetrics/
