@@ -11,8 +11,7 @@ irstd_basic/
 ├── net.py                    # 模型注册表 + loss 注册表 + Net 包装
 ├── dataset.py                # 数据加载（img_idx 划分文件驱动）
 ├── loss.py                   # BCEWithLogits / SoftIoU / Focal
-├── metrics.py                # 经典协议：IoU / nIoU (GPU) + PD/FA (CPU，质心距匹配)
-├── metrics_opdc.py           # OPDC 匹配 + hIoU + 7 类误差分解（CPU，可独立运行自测）
+├── metrics.py                # 全部评测指标：经典协议 (IoU/nIoU/PD/FA) + OPDC 匹配/hIoU/误差分解
 ├── utils.py                  # 归一化参数、seed、优化器
 ├── cal_params.py             # 参数量 / FLOPs 统计
 ├── models/                   # 模型实现（unet / acm / …）
@@ -23,10 +22,10 @@ irstd_basic/
 └── README.md
 ```
 
-快速自检（不依赖 torch）：
+快速自检：
 
 ```bash
-python metrics_opdc.py      # OPDC / hIoU 内置用例 A–F
+python metrics.py           # 指标自测（经典 + OPDC/hIoU，用例 A–F）
 python test.py --help
 ```
 
@@ -45,6 +44,22 @@ python test.py --help
 | MiniUNet head2 [4,8,16] | 30K | 154M |
 | MicroUNet [2,4,8] | 7.7K | 40.9M |
 | ACM | 398K | 352M |
+
+### 移植基线（`models/` 内，均遵循 logits 输出约定）
+
+| 模型 | 注册名 | 参数量 | 工厂参数说明 |
+|---|---|---:|---|
+| DNANet | `DNANet` | 4.70M | `mode='test'` → 单输出 [B,1,H,W] |
+| MSHNet | `MSHNet` | 4.07M | — |
+| GSFANet | `GSFANet` | 2.97M | `size=256` |
+| MPCNet | `MPCNet` | 2.28M | `Train=False`，`forward()` 单输出 |
+| PHFNet | `PHFNet` | 19.52M | 类名 `UCTNet`，`gt_ds=False` → 原始 logits |
+| SCTransNet | `SCTransNet` | 11.19M | `img_size=256`，`forward()` 取最后一路输出 |
+| SDSNet | `SDSNet` | 2.49M | — |
+| UIUNet | `UIUNet` | 50.54M | `mode='test'` → `d0` |
+
+参数量与论文 Tab.1 对齐（DNANet 4.7M / MSHNet 4.1M / UIUNet 50.5M / SCTransNet 11.2M）。
+FLOPs 请用 `cal_params.py` 在本机重新生成（不同 thop/torch 版本会有偏差，不要跨环境比较）。
 
 所有模型输出 **logits**（未经 sigmoid），sigmoid 仅在 loss 内部和 eval 时应用。
 
@@ -71,10 +86,10 @@ python test.py --help
 | PD / FA (OPDC) | 同上，但匹配改用 OPDC（IoU≥0.5 优先 + 距离补偿，匈牙利分配） | 训练结束后 (CPU) |
 | **hIoU** | 分级 IoU（目标级 × 像素级），详见下节 | 训练结束后 (CPU) |
 
-### 两套评测协议：`metrics.py` vs `metrics_opdc.py`
+### 两套评测协议（同一个 `metrics.py`）
 
 `metrics.py` 保留**经典协议**（与既有论文/BasicIRSTD 的数字可比）；
-`metrics_opdc.py` 实现 **NeurIPS'25 D&B《Rethinking Evaluation of IRSTD》** 的两处修正
+`metrics.py` 中的 OPDC 部分实现 **NeurIPS'25 D&B《Rethinking Evaluation of IRSTD》** 的两处修正
 （arXiv:2509.16888，官方实现 [PyIRSTDMetrics](https://github.com/lartpang/PyIRSTDMetrics)）。
 
 **1) OPDC 匹配**（修的是"算不算命中"这个判定原子）
@@ -130,7 +145,7 @@ python test.py --model_name LightUNet --dump out/lightunet_irstd1k.json
 指标模块可独立自检（不依赖 torch）：
 
 ```bash
-python metrics_opdc.py     # 跑内置自测用例 A-F
+python metrics.py          # 跑内置自测用例 A-F（经典 + OPDC/hIoU）
 ```
 
 自测覆盖：大目标偏移（旧法 TP=0 / OPDC TP=1）、极小目标（纯 IoU 失败 / OPDC 救回）、
@@ -138,7 +153,7 @@ python metrics_opdc.py     # 跑内置自测用例 A-F
 
 ### 与官方 toolkit 的一致性
 
-`metrics_opdc.py` 在 500 个随机用例与官方 `PyIRSTDMetrics` 逐位对齐
+`metrics.py` 的 OPDC 部分在 500 个随机用例与官方 `PyIRSTDMetrics` 逐位对齐
 （TP/FP/FN、Σ 匹配对 IoU、fp_area、Pd、Fa、hIoU 以及 7 类误差分解全部一致），
 因此本仓库出的 hIoU 可以直接和论文 Tab.1 对比。
 

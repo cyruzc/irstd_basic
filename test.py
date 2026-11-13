@@ -2,9 +2,9 @@
 
 Two evaluation protocols are available:
 
-    basic : the classic protocol (kept from metrics.py)
+    basic : the classic protocol (IoU / nIoU / PD / FA, from metrics.py)
             IoU / nIoU (pixel level) + PD / FA (centroid distance < 3, greedy)
-    opdc  : the protocol of "Rethinking Evaluation of IRSTD" (NeurIPS'25 D&B)
+    opdc  : the protocol of "Rethinking Evaluation of IRSTD" (NeurIPS'25 D&B), also in metrics.py
             OPDC matching (IoU>=0.5 priority + distance<3 compensation, Hungarian)
             -> PD / FA, plus seg_iou / loc_iou / hIoU
     full  : both, side by side (default). Keeps numbers comparable to Tab.1 of the
@@ -37,8 +37,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from dataset import TestSetLoader
-from metrics import IoU, nIoU, PD_FA
-from metrics_opdc import HierarchicalErrorAnalysis, MatchingMetrics
+from metrics import HierarchicalErrorAnalysis, IoU, MatchingMetrics, PD_FA, nIoU
 from net import MODEL_NAMES, Net
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"

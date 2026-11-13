@@ -6,7 +6,7 @@
 主线依据：Pang et al. *Rethinking Evaluation of Infrared Small Target Detection*,
 **NeurIPS 2025 (Datasets & Benchmarks)**, arXiv:2509.16888，官方实现
 [PyIRSTDMetrics](https://github.com/lartpang/PyIRSTDMetrics)。
-仓库内的实现见根目录 [`metrics_opdc.py`](../../metrics_opdc.py)。
+仓库内的实现见根目录 [`metrics.py`](../../metrics.py) 的「OPDC + hIoU protocol」一节。
 
 ## 文件
 
@@ -47,5 +47,5 @@ python audit_opdc2.py  # 上面那条的频率统计
 脚本里 `sys.path.insert(0, 'PyIRSTDMetrics')`，所以要么把仓库克隆成 `PyIRSTDMetrics/`，
 要么改这一行。
 
-> demos 依赖官方 toolkit 仅用于**对照**；仓库内的实现（`metrics_opdc.py`）不依赖它，
+> demos 依赖官方 toolkit 仅用于**对照**；仓库内的实现（`metrics.py`）不依赖它，
 > 只依赖 numpy / scipy / scikit-image。

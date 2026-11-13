@@ -5,10 +5,18 @@ import torch.nn as nn
 from loss import BCELogits, CombinedLoss, FocalLogits, SoftIoU
 from models import (
     ACM,
+    DNANet,
+    GSFANet,
     LightUNet,
     MiniUNet,
     MiniUNetHead2,
+    MPCNet,
     MicroUNet,
+    MSHNet,
+    SCTransNet,
+    SDSNet,
+    UIUNet,
+    UCTNet,
 )
 
 LOSS_REGISTRY = {
@@ -22,6 +30,16 @@ MODEL_REGISTRY = {
     "MiniUNetHead2": lambda: MiniUNetHead2(in_channels=1),
     "MicroUNet": lambda: MicroUNet(in_channels=1),
     "ACM": lambda: ACM(in_channels=1),
+    # --- ported baselines (default factory args chosen so forward returns logits) ---
+    "DNANet": lambda: DNANet(in_channels=1),                 # mode='test' -> single tensor
+    "MSHNet": lambda: MSHNet(in_channels=1),
+    "GSFANet": lambda: GSFANet(in_channels=1),               # size=256
+    "MPCNet": lambda: MPCNet(Train=False),                   # forward() -> [B,1,H,W]
+    "PHFNet": lambda: UCTNet(in_features=1, out_features=1,
+                             gt_ds=False, mode="test"),      # gt_ds=False -> raw logits
+    "SCTransNet": lambda: SCTransNet(in_channels=1),         # img_size=256
+    "SDSNet": lambda: SDSNet(in_channels=1),
+    "UIUNet": lambda: UIUNet(in_channels=1),                 # mode='test' -> d0
 }
 
 LOSS_NAMES = tuple(LOSS_REGISTRY.keys())

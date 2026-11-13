@@ -4,21 +4,25 @@
 
 ## 2026-11-13
 
-### 新增 OPDC 匹配 + hIoU 评测协议
+### 新增 OPDC 匹配 + hIoU 评测协议，接入 8 个基线模型
 
 依据 *Rethinking Evaluation of Infrared Small Target Detection*（NeurIPS 2025 D&B，
 arXiv:2509.16888），把论文的两处修正接入本仓库。
 
 **新增**
 
-- `metrics_opdc.py` —— 与训练框架解耦的 CPU 评测模块（numpy / scipy / scikit-image）：
+- `metrics.py` 内新增 OPDC / hIoU 协议（与原 `IoU` / `nIoU` / `PD_FA` 同文件，numpy / scipy / scikit-image）：
   - `OPDCMatching`：两阶段匹配（IoU≥0.5 重叠优先 + 匈牙利全局分配；剩余对再用质心距<3 补偿）。
     替代经典协议的贪心匹配，解决「大目标偏 3px 被判全漏」与「匹配结果依赖枚举顺序」两个问题。
   - `MatchingMetrics`：一次给出 `Pd / Fa / seg_iou / loc_iou / hIoU`，
     其中 `hIoU = Σ(匹配对像素 IoU) / (TP+FP+FN)`（`TP` 在闭式里约掉）。
   - `HierarchicalErrorAnalysis`：7 类误差分解，满足 `Σ loc_err = 1−loc_iou`、`Σ seg_err = 1−seg_iou`。
   - `DistanceOnlyMatching`：保留经典贪心匹配，供 A/B 对照。
-  - `python metrics_opdc.py` 跑内置自测（用例 A–F）。
+  - `python metrics.py` 跑内置自测（用例 A–F，经典与 OPDC 两套一并检查）。
+- `models/` 接入 8 个移植基线并在 `net.py` 注册：
+  `DNANet` / `MSHNet` / `GSFANet` / `MPCNet` / `PHFNet`(UCTNet) /
+  `SCTransNet` / `SDSNet` / `UIUNet`（均遵循 logits 输出约定）。
+  参数量与论文 Tab.1 对齐：DNANet 4.70M / MSHNet 4.07M / UIUNet 50.54M / SCTransNet 11.19M。
 - `tools/audit/` —— 评测协议审计材料：数据集划分审计、论文 Tab.1 数据、OPDC/hIoU 机制验证脚本。
 
 **修改**
