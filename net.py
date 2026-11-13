@@ -10,7 +10,6 @@ from models import (
     LightUNet,
     MiniUNet,
     MiniUNetHead2,
-    MPCNet,
     MicroUNet,
     MSHNet,
     SCTransNet,
@@ -34,7 +33,6 @@ MODEL_REGISTRY = {
     "DNANet": lambda: DNANet(in_channels=1),                 # mode='test' -> single tensor
     "MSHNet": lambda: MSHNet(in_channels=1),
     "GSFANet": lambda: GSFANet(in_channels=1),               # size=256
-    "MPCNet": lambda: MPCNet(Train=False),                   # forward() -> [B,1,H,W]
     "PHFNet": lambda: UCTNet(in_features=1, out_features=1,
                              gt_ds=False, mode="test"),      # gt_ds=False -> raw logits
     "SCTransNet": lambda: SCTransNet(in_channels=1),         # img_size=256

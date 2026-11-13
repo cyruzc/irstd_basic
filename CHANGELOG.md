@@ -4,7 +4,7 @@
 
 ## 2026-11-13
 
-### 新增 OPDC 匹配 + hIoU 评测协议，接入 8 个基线模型
+### 新增 OPDC 匹配 + hIoU 评测协议，接入 7 个基线模型
 
 依据 *Rethinking Evaluation of Infrared Small Target Detection*（NeurIPS 2025 D&B，
 arXiv:2509.16888），把论文的两处修正接入本仓库。
@@ -19,8 +19,8 @@ arXiv:2509.16888），把论文的两处修正接入本仓库。
   - `HierarchicalErrorAnalysis`：7 类误差分解，满足 `Σ loc_err = 1−loc_iou`、`Σ seg_err = 1−seg_iou`。
   - `DistanceOnlyMatching`：保留经典贪心匹配，供 A/B 对照。
   - `python metrics.py` 跑内置自测（用例 A–F，经典与 OPDC 两套一并检查）。
-- `models/` 接入 8 个移植基线并在 `net.py` 注册：
-  `DNANet` / `MSHNet` / `GSFANet` / `MPCNet` / `PHFNet`(UCTNet) /
+- `models/` 接入 7 个移植基线并在 `net.py` 注册：
+  `DNANet` / `MSHNet` / `GSFANet` / `PHFNet`(UCTNet) /
   `SCTransNet` / `SDSNet` / `UIUNet`（均遵循 logits 输出约定）。
   参数量与论文 Tab.1 对齐：DNANet 4.70M / MSHNet 4.07M / UIUNet 50.54M / SCTransNet 11.19M。
 - `tools/audit/` —— 评测协议审计材料：数据集划分审计、论文 Tab.1 数据、OPDC/hIoU 机制验证脚本。

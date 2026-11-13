@@ -52,7 +52,6 @@ python test.py --help
 | DNANet | `DNANet` | 4.70M | `mode='test'` → 单输出 [B,1,H,W] |
 | MSHNet | `MSHNet` | 4.07M | — |
 | GSFANet | `GSFANet` | 2.97M | `size=256` |
-| MPCNet | `MPCNet` | 2.28M | `Train=False`，`forward()` 单输出 |
 | PHFNet | `PHFNet` | 19.52M | 类名 `UCTNet`，`gt_ds=False` → 原始 logits |
 | SCTransNet | `SCTransNet` | 11.19M | `img_size=256`，`forward()` 取最后一路输出 |
 | SDSNet | `SDSNet` | 2.49M | — |
